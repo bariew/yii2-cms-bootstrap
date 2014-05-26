@@ -1,17 +1,17 @@
 <?php
 /**
- * EventBootstrap class file
+ * CmsBootstrap class file
  * @copyright Copyright (c) 2014 Galament
  * @license http://www.yiiframework.com/license/
  */
 
-namespace bariew\eventManager;
+namespace bariew\cmsBootstrap;
 
 use yii\base\BootstrapInterface;
 use yii\base\Application;
 
 /**
- * Bootstrap class initiates event manager.
+ * Bootstrap class initiates external modules.
  * 
  * @author Pavel Bariev <bariew@yandex.ru>
  */
@@ -22,12 +22,7 @@ class CmsBootstrap implements BootstrapInterface
      */
     public function bootstrap($app)
     {
-        if(!$eventManager = $this->getEventManager($app)){
-            return true;
-        }
-        $app->on(Application::EVENT_BEFORE_REQUEST, function () use ($eventManager) {
-            $eventManager->init();
-        });
+        self::attachModules($app);
         return true;
     }
     /**
