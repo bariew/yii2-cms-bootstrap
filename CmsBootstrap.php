@@ -18,30 +18,43 @@ use yii\base\Application;
 class CmsBootstrap implements BootstrapInterface
 {
     /**
+     * @var Application current yii app
+     */
+    protected $app;
+    /**
      * @inheritdoc
      */
     public function bootstrap($app)
     {
-        self::attachModules($app);
+        $this->app = $app;
+        $this->attachModules()
+            ->attachMigrations();
+        
         return true;
     }
     /**
      * finds and creates app event manager from its settings
-     * @param Application $app yii app
-     * @return EventManager app event manager component
-     * @throws Exception Define event manager
      */
-    public static function attachModules($app)
+    public function attachModules()
     {
-        $modules = $app->modules;
-        foreach ($app->extensions as $name => $config) {
+        $modules = $this->app->modules;
+        foreach ($this->app->extensions as $name => $config) {
             $extName = preg_replace('/.*\/(.*)$/', '$1', $name);
             if(!preg_match('/yii2-(.+)-cms-module/', $extName, $matches)){
                 continue;
             }
             $alias = key($config['alias']);
-            $modules[$matches[1]] = str_replace(['@', '/'], ['\\', '\\'], $alias) .'\Module';
+            $modules[$matches[1]] = [
+                'class'     => str_replace(['@', '/'], ['\\', '\\'], $alias) .'\Module',
+                'basePath'  => $config['alias'][$alias]
+            ];
         }
-        \Yii::configure($app, compact('modules'));
+        \Yii::configure($this->app, compact('modules'));
+        return $this;
+    }
+    
+    public function attachMigrations()
+    {
+        //$this->app->controllerMap['migrate'] = 'bariew\moduleMigration\ModuleMigration';
     }
 }
