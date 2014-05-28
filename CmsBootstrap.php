@@ -55,6 +55,6 @@ class CmsBootstrap implements BootstrapInterface
     
     public function attachMigrations()
     {
-        //$this->app->controllerMap['migrate'] = 'bariew\moduleMigration\ModuleMigration';
+        $this->app->controllerMap['migrate'] = 'bariew\moduleMigration\ModuleMigration';
     }
 }
