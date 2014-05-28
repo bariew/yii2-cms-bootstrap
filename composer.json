@@ -2,7 +2,7 @@
     "name": "bariew/yii2-cms-bootstrap",
     "description": "Attaches external modules to application",
     "type": "yii2-extension",
-    "version": "0.2.2",
+    "version": "0.2.3",
     "keywords": ["yii2","cms","bootstrap"],
     "license": "BSD-3-Clause",
     "homepage": "https://github.com/bariew/yii2-cms-bootstrap",
@@ -14,9 +14,9 @@
         }
     ],
     "require": {
-        "php": ">=5.4.0",
-        "yiisoft/yii2": "*",
-        "bariew/yii2-module-migration-controller": "dev-master"
+        "php"           : ">=5.4.0",
+        "yiisoft/yii2"  : "*",
+        "bariew/yii2-module-migration-controller"   : "*@dev"
     },
     "autoload": {
         "psr-4": {
