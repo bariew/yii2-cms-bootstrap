@@ -21,19 +21,28 @@ class CmsBootstrap implements BootstrapInterface
      * @var Application current yii app
      */
     protected $app;
+    
     /**
      * @inheritdoc
      */
     public function bootstrap($app)
     {
+        $app->setComponents([
+            'cms' => [
+                'class' => 'bariew\cmsBootstrap\Cms',
+            ],
+        ]);
+        
         $this->app = $app;
         $this->attachModules()
-            ->attachMigrations();
+            ->attachMigrations()
+            ->attachEvents();
         
         return true;
     }
     /**
-     * finds and creates app event manager from its settings
+     * attaches modules to application from external 
+     * composer installed extensions sources
      */
     public function attachModules()
     {
@@ -52,9 +61,44 @@ class CmsBootstrap implements BootstrapInterface
         \Yii::configure($this->app, compact('modules'));
         return $this;
     }
-    
+    /**
+     * Attaches advanced module migration controller
+     * for migrating from modules root /migrations folder
+     * @return \bariew\cmsBootstrap\CmsBootstrap this
+     */
     public function attachMigrations()
     {
         $this->app->controllerMap['migrate'] = 'bariew\moduleMigration\ModuleMigration';
+        return $this;
+    }
+    /**
+     * Attaches module events from it root _events.php files
+     * to app->eventManager
+     */
+    public function attachEvents()
+    {
+        $events = [];
+        foreach ($this->app->modules as $config) {
+            switch (gettype($config)) {
+                case 'object'   : 
+                    $basePath = $config->basePath;
+                    break;
+                case 'array'    : 
+                    if (isset($config['basePath'])) {
+                        $basePath = $config['basePath'];
+                        break;
+                    }
+                    $config = $config['class'];
+                default         : 
+                    $basePath = str_replace('\\', '/', preg_replace('/^(.*)\\\(\w+)$/', '@$1', $config));
+                    $basePath = \Yii::getAlias($basePath);
+            }
+            $file = $basePath . DIRECTORY_SEPARATOR . '_events.php';
+            if (!file_exists($file) || !is_file($file)) {
+                continue;
+            }
+            $events = array_merge($events, include $file);
+        }
+        $this->app->cms->eventManager->attachEvents($events);
     }
 }

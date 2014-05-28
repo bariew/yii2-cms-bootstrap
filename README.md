@@ -4,6 +4,26 @@ CMS bootstrap Yii2 extension
 Attaches external modules to application.
 External module is a Yii2 common extension, installed with composer, and having
  MVC structure.
+It does few things:
+1. Adds external modules to \Yii::$app->modules array.
+2. Replaces common migration controller with ModuleMigration controller
+which also finds migrations in module /migrations folder and runs them.
+3. Adds events from module root folder _events.php and makes them active.
+_events.php content example:
+```
+    <?php
+    return [
+        'app\models\User' => [
+            'afterInsert' => [
+                ['app\models\Email', 'userRegistration']
+            ],  
+        ]
+    ];
+```
+
+See more description in related packages:
+    "bariew/yii2-module-migration-controller"
+    "bariew/yii2-event-component"
 
 
 Installation
