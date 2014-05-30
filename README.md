@@ -1,6 +1,8 @@
 
 CMS bootstrap Yii2 extension
-===================
+============================================================
+! Please don't use it. It is in extensive development yet. !
+============================================================
 Attaches external modules to application.
 External module is a Yii2 common extension, installed with composer, and having
  MVC structure.

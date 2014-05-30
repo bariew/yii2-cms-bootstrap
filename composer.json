@@ -16,8 +16,8 @@
     "require": {
         "php"           : ">=5.4.0",
         "yiisoft/yii2"  : "*",
-        "bariew/yii2-module-migration-controller"   : "1.*",
-        "bariew/yii2-event-component"               : "1.*"
+        "bariew/yii2-module-migration-controller"   : ">=1.0.1",
+        "bariew/yii2-event-component"               : ">=1.1.0"
     },
     "autoload": {
         "psr-4": {
