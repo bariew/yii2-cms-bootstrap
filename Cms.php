@@ -6,6 +6,7 @@
  */
 
 namespace bariew\cmsBootstrap;
+use bariew\eventManager\EventBootstrap;
 use yii\base\Component;
 
 /**
@@ -25,6 +26,6 @@ class Cms extends Component
         return $this->_eventManager
             ? $this->_eventManager
             : $this->_eventManager 
-                = \bariew\eventManager\EventBootstrap::getEventManager(\Yii::$app);
+                = EventBootstrap::getEventManager(\Yii::$app);
     }
 }

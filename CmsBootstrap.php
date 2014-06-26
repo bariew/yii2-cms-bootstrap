@@ -9,6 +9,7 @@ namespace bariew\cmsBootstrap;
 
 use yii\base\BootstrapInterface;
 use yii\base\Application;
+use yii\helpers\ArrayHelper;
 
 /**
  * Bootstrap class initiates external modules.
@@ -53,10 +54,15 @@ class CmsBootstrap implements BootstrapInterface
                 continue;
             }
             $alias = key($config['alias']);
+
             $modules[$matches[1]] = [
                 'class'     => str_replace(['@', '/'], ['\\', '\\'], $alias) .'\Module',
                 'basePath'  => $config['alias'][$alias]
             ];
+            $paramPath = $config['alias'][$alias] . DIRECTORY_SEPARATOR . 'params' . DIRECTORY_SEPARATOR . 'main.php';
+            if (file_exists($paramPath)) {
+                $modules[$matches[1]]['params'] = require $paramPath;
+            }
         }
         \Yii::configure($this->app, compact('modules'));
         return $this;
@@ -79,25 +85,11 @@ class CmsBootstrap implements BootstrapInterface
     {
         $events = [];
         foreach ($this->app->modules as $config) {
-            switch (gettype($config)) {
-                case 'object'   : 
-                    $basePath = $config->basePath;
-                    break;
-                case 'array'    : 
-                    if (isset($config['basePath'])) {
-                        $basePath = $config['basePath'];
-                        break;
-                    }
-                    $config = $config['class'];
-                default         : 
-                    $basePath = str_replace('\\', '/', preg_replace('/^(.*)\\\(\w+)$/', '@$1', $config));
-                    $basePath = \Yii::getAlias($basePath);
+            if (isset($config['params']['events'])) {
+                $events = ArrayHelper::merge($events, $config['params']['events']);
+            } else if (isset($config->params['events'])) {
+                $events = ArrayHelper::merge($events, $config->params['events']);
             }
-            $file = $basePath . DIRECTORY_SEPARATOR . '_events.php';
-            if (!file_exists($file) || !is_file($file)) {
-                continue;
-            }
-            $events = array_merge($events, include $file);
         }
         $this->app->cms->eventManager->attachEvents($events);
     }
