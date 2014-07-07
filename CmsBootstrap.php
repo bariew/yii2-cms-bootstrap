@@ -41,6 +41,7 @@ class CmsBootstrap implements BootstrapInterface
         
         return true;
     }
+
     /**
      * attaches modules to application from external 
      * composer installed extensions sources
@@ -53,20 +54,23 @@ class CmsBootstrap implements BootstrapInterface
             if(!preg_match('/yii2-(.+)-cms-module/', $extName, $matches)){
                 continue;
             }
+            $moduleName = $matches[1];
             $alias = key($config['alias']);
-
-            $modules[$matches[1]] = [
+            $basePath = $config['alias'][$alias];
+            $paramPath = $basePath . DIRECTORY_SEPARATOR . 'params' . DIRECTORY_SEPARATOR . 'main.php';
+            $params =  file_exists($paramPath) ? require $paramPath : [];
+            $params['moduleAlias'] = $alias;
+            $modules[$moduleName] = [
                 'class'     => str_replace(['@', '/'], ['\\', '\\'], $alias) .'\Module',
-                'basePath'  => $config['alias'][$alias]
+                'basePath'  => $basePath,
+                'params'    => $params
             ];
-            $paramPath = $config['alias'][$alias] . DIRECTORY_SEPARATOR . 'params' . DIRECTORY_SEPARATOR . 'main.php';
-            if (file_exists($paramPath)) {
-                $modules[$matches[1]]['params'] = require $paramPath;
-            }
         }
+        $this->setThemePaths($modules);
         \Yii::configure($this->app, compact('modules'));
         return $this;
     }
+
     /**
      * Attaches advanced module migration controller
      * for migrating from modules root /migrations folder
@@ -77,6 +81,7 @@ class CmsBootstrap implements BootstrapInterface
         $this->app->controllerMap['migrate'] = 'bariew\moduleMigration\ModuleMigration';
         return $this;
     }
+
     /**
      * Attaches module events from it root _events.php files
      * to app->eventManager
@@ -92,5 +97,23 @@ class CmsBootstrap implements BootstrapInterface
             }
         }
         $this->app->cms->eventManager->attachEvents($events);
+    }
+
+    protected function setThemePaths($modules)
+    {
+        if(!isset(\Yii::$app->view->theme->pathMap['@app/modules'])){
+            return;
+        }
+        $modulesPath = \Yii::$app->view->theme->pathMap['@app/modules'];
+        $paths = [];
+        foreach ($modules as $name => $config) {
+            if (!isset($config['params']['alias'])) {
+                continue;
+            }
+            $alias = $config['params']['alias'];
+            $paths[$alias . "/views"] = $modulesPath . DIRECTORY_SEPARATOR . $name;
+            $paths[$alias . "/widgets/views"] = $modulesPath . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR . 'widgets';
+        }
+        \Yii::configure(\Yii::$app->view->theme, ['pathMap' => array_merge(\Yii::$app->view->theme->pathMap, $paths)]);
     }
 }
