@@ -63,7 +63,7 @@ class CmsBootstrap implements BootstrapInterface
             $modules[$moduleName] = [
                 'class'     => str_replace(['@', '/'], ['\\', '\\'], $alias) .'\Module',
                 'basePath'  => $basePath,
-                'params'    => $params
+                'params'    => $params,
             ];
         }
         $this->setThemePaths($modules);
@@ -107,10 +107,10 @@ class CmsBootstrap implements BootstrapInterface
         $modulesPath = \Yii::$app->view->theme->pathMap['@app/modules'];
         $paths = [];
         foreach ($modules as $name => $config) {
-            if (!isset($config['params']['alias'])) {
+            if (!isset($config['params']['moduleAlias'])) {
                 continue;
             }
-            $alias = $config['params']['alias'];
+            $alias = $config['params']['moduleAlias'];
             $paths[$alias . "/views"] = $modulesPath . DIRECTORY_SEPARATOR . $name;
             $paths[$alias . "/widgets/views"] = $modulesPath . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR . 'widgets';
         }
