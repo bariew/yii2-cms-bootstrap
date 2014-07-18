@@ -7,6 +7,7 @@
 
 namespace bariew\cmsBootstrap;
 
+use bariew\eventManager\EventBootstrap;
 use yii\base\BootstrapInterface;
 use yii\base\Application;
 use yii\helpers\ArrayHelper;
@@ -28,16 +29,11 @@ class CmsBootstrap implements BootstrapInterface
      */
     public function bootstrap($app)
     {
-        $app->setComponents([
-            'cms' => [
-                'class' => 'bariew\cmsBootstrap\Cms',
-            ],
-        ]);
-        
         $this->app = $app;
         $this->attachModules()
             ->attachMigrations()
-            ->attachEvents();
+            ->attachEvents()
+            ->setThemePaths();
         
         return true;
     }
@@ -66,7 +62,6 @@ class CmsBootstrap implements BootstrapInterface
                 'params'    => $params,
             ];
         }
-        $this->setThemePaths($modules);
         \Yii::configure($this->app, compact('modules'));
         return $this;
     }
@@ -96,11 +91,17 @@ class CmsBootstrap implements BootstrapInterface
                 $events = ArrayHelper::merge($events, $config->params['events']);
             }
         }
-        $this->app->cms->eventManager->attachEvents($events);
+        EventBootstrap::getEventManager(\Yii::$app)->attachEvents($events);
+        return $this;
     }
 
-    protected function setThemePaths($modules)
+    /**
+     *
+     * @return \self $this self instance.
+     */
+    protected function setThemePaths()
     {
+        $modules = $this->app->modules;
         if(!isset(\Yii::$app->view->theme->pathMap['@app/modules'])){
             return;
         }
@@ -115,5 +116,6 @@ class CmsBootstrap implements BootstrapInterface
             $paths[$alias . "/widgets/views"] = $modulesPath . DIRECTORY_SEPARATOR . $name . DIRECTORY_SEPARATOR . 'widgets';
         }
         \Yii::configure(\Yii::$app->view->theme, ['pathMap' => array_merge(\Yii::$app->view->theme->pathMap, $paths)]);
+        return $this;
     }
 }
