@@ -7,10 +7,14 @@
 
 namespace bariew\cmsBootstrap;
 
+use Yii;
 use bariew\eventManager\EventBootstrap;
 use yii\base\BootstrapInterface;
 use yii\base\Application;
+use yii\base\Event;
+use yii\bootstrap\NavBar;
 use yii\helpers\ArrayHelper;
+use yii\web\View;
 
 /**
  * Bootstrap class initiates external modules.
@@ -29,6 +33,9 @@ class CmsBootstrap implements BootstrapInterface
      */
     public function bootstrap($app)
     {
+        $app->on(Application::EVENT_BEFORE_REQUEST, function () use ($app) {
+            $app->getView()->on(View::EVENT_BEGIN_BODY, [$this, 'renderMenu']);
+        });
         $this->app = $app;
         $this->attachModules()
             ->attachMigrations()
@@ -117,5 +124,27 @@ class CmsBootstrap implements BootstrapInterface
         }
         \Yii::configure(\Yii::$app->view->theme, ['pathMap' => array_merge(\Yii::$app->view->theme->pathMap, $paths)]);
         return $this;
+    }
+
+    public function renderMenu(Event $event)
+    {
+        if (Yii::$app->getRequest()->getIsAjax()) {
+            return;
+        }
+        NavBar::begin([
+            'brandLabel' => 'Home',
+            'brandUrl' => Yii::$app->homeUrl,
+            'options' => [
+                'class' => 'navbar-inverse navbar-fixed-top',
+            ],
+        ]);
+        if (isset(\Yii::$app->i18n->widget)) {
+            echo "<div class='btn pull-right'>".Yii::$app->i18n->widget."</div>";
+        }
+        echo Menu::widget([
+            'options' => ['class' => 'navbar-nav navbar-right']
+        ]);
+
+        NavBar::end();
     }
 }
